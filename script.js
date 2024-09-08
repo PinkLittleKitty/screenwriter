@@ -267,16 +267,7 @@ var Line = React.createClass({displayName: "Line",
 		this.bindAsObject(new Firebase("https://screenwrite.firebaseio.com/"+this.state.scriptId+"/lines/" + this.props.index), "line");
 	},
 	handleChange: function(event) {
-		this.firebaseRefs.line.update({'text':event.target.value}, function() {
-			// After updating, set the cursor to the end of the input
-			var el = this.refs.text.getDOMNode();
-			var range = document.createRange();
-			var sel = window.getSelection();
-			range.setStart(el.childNodes[0], el.innerText.length);
-			range.collapse(true);
-			sel.removeAllRanges();
-			sel.addRange(range);
-		}.bind(this));
+		this.firebaseRefs.line.update({'text':event.target.value});
 	},
 	handleComment: function(event) {
 		this.firebaseRefs.line.update({'comment':event.target.value});
@@ -408,9 +399,10 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 	emitChange: function(){
 		var html = this.getDOMNode().innerHTML;
 		if (this.props.onChange && html !== this.lastHtml) {
-			// Store current cursor position
+			// Save current cursor position
 			var sel = window.getSelection();
-			var offset = sel.focusOffset;
+			var range = sel.getRangeAt(0);
+			var offset = range.startOffset;
 
 			this.props.onChange({
 				target: {
@@ -418,13 +410,14 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 				}
 			});
 
-			// Restore cursor position
-			var range = document.createRange();
-			var node = sel.focusNode;
-			range.setStart(node, Math.min(offset, node.length));
-			range.collapse(true);
-			sel.removeAllRanges();
-			sel.addRange(range);
+			// Restore cursor position after the change
+			setTimeout(() => {
+				var newRange = document.createRange();
+				newRange.setStart(sel.anchorNode, offset);
+				newRange.setEnd(sel.anchorNode, offset);
+				sel.removeAllRanges();
+				sel.addRange(newRange);
+			}, 0);
 		}
 		this.lastHtml = html;
 	},
@@ -433,7 +426,6 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 			ref: "input", 
 			onInput: this.emitChange, 
 			onBlur: this.emitChange, 
-			onKeyUp: this.emitChange,
 			onKeyDown: this.props.onKeyDown, 
 			onClick: this.props.onClick, 
 			className: this.props.className, 
@@ -441,18 +433,9 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 			onBlur: this.props.onBlur, 
 			onPaste: this.stripPaste, 
 			"data-suggest": this.props.suggest, 
-			contentEditable: true, 
-			dangerouslySetInnerHTML: {__html: this.props.html}});
-	},
-	storeCaret: function() {
-		var range = window.getSelection().getRangeAt(0);
-		this.caretPos = range.cloneRange();
-	},
-	restoreCaret: function() {
-		var selection = window.getSelection();
-		selection.removeAllRanges();
-		selection.addRange(this.caretPos);
-	},});
+			contentEditable: true
+		}, this.props.html);
+	}});
 
 var Nav = React.createClass({displayName: "Nav",
 	mixins: [ReactFireMixin, StopPropagationMixin, ReactRouter.State],

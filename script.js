@@ -397,9 +397,9 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 		e.preventDefault();
 	},
 	emitChange: function(){
+		this.storeCaret();
 		var html = this.getDOMNode().innerHTML;
 		if (this.props.onChange && html !== this.lastHtml) {
-
 			this.props.onChange({
 				target: {
 					value: html
@@ -407,12 +407,14 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 			});
 		}
 		this.lastHtml = html;
+		this.restoreCaret();
 	},
 	render: function(){
 		return React.createElement("div", {
 			ref: "input", 
 			onInput: this.emitChange, 
 			onBlur: this.emitChange, 
+			onKeyUp: this.emitChange,
 			onKeyDown: this.props.onKeyDown, 
 			onClick: this.props.onClick, 
 			className: this.props.className, 
@@ -422,8 +424,16 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 			"data-suggest": this.props.suggest, 
 			contentEditable: true, 
 			dangerouslySetInnerHTML: {__html: this.props.html}});
-	}
-});
+	},
+	storeCaret: function() {
+		var range = window.getSelection().getRangeAt(0);
+		this.caretPos = range.cloneRange();
+	},
+	restoreCaret: function() {
+		var selection = window.getSelection();
+		selection.removeAllRanges();
+		selection.addRange(this.caretPos);
+	},});
 
 var Nav = React.createClass({displayName: "Nav",
 	mixins: [ReactFireMixin, StopPropagationMixin, ReactRouter.State],

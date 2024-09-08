@@ -267,7 +267,16 @@ var Line = React.createClass({displayName: "Line",
 		this.bindAsObject(new Firebase("https://screenwrite.firebaseio.com/"+this.state.scriptId+"/lines/" + this.props.index), "line");
 	},
 	handleChange: function(event) {
-		this.firebaseRefs.line.update({'text':event.target.value});
+		this.firebaseRefs.line.update({'text':event.target.value}, function() {
+			// After updating, set the cursor to the end of the input
+			var el = this.refs.text.getDOMNode();
+			var range = document.createRange();
+			var sel = window.getSelection();
+			range.setStart(el.childNodes[0], el.innerText.length);
+			range.collapse(true);
+			sel.removeAllRanges();
+			sel.addRange(range);
+		}.bind(this));
 	},
 	handleComment: function(event) {
 		this.firebaseRefs.line.update({'comment':event.target.value});
@@ -397,17 +406,27 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 		e.preventDefault();
 	},
 	emitChange: function(){
-		this.storeCaret();
 		var html = this.getDOMNode().innerHTML;
 		if (this.props.onChange && html !== this.lastHtml) {
+			// Store current cursor position
+			var sel = window.getSelection();
+			var offset = sel.focusOffset;
+
 			this.props.onChange({
 				target: {
 					value: html
 				}
 			});
+
+			// Restore cursor position
+			var range = document.createRange();
+			var node = sel.focusNode;
+			range.setStart(node, Math.min(offset, node.length));
+			range.collapse(true);
+			sel.removeAllRanges();
+			sel.addRange(range);
 		}
 		this.lastHtml = html;
-		this.restoreCaret();
 	},
 	render: function(){
 		return React.createElement("div", {

@@ -588,7 +588,7 @@ var Home = React.createClass({
 						</p>
 
 						<p>
-							<a className="btn btn-default" href="https://github.com/ProLoser/screenwriter"><img src="github-icons/GitHub-Mark-32px.png" alt="Github" /> Source Code</a>
+							<a className="btn btn-default" href="https://github.com/PinkLittleKitty/screenwriter"><img src="github-icons/GitHub-Mark-32px.png" alt="Github" /> Source Code</a>
 						</p>
 					</div>
 

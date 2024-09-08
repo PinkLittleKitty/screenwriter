@@ -588,7 +588,7 @@ var Home = React.createClass({displayName: "Home",
 						), 
 
 						React.createElement("p", null, 
-							React.createElement("a", {className: "btn btn-default", href: "https://github.com/ProLoser/screenwriter"}, React.createElement("img", {src: "github-icons/GitHub-Mark-32px.png", alt: "Github"}), " Source Code")
+							React.createElement("a", {className: "btn btn-default", href: "https://github.com/PinkLittleKitty/screenwriter"}, React.createElement("img", {src: "github-icons/GitHub-Mark-32px.png", alt: "Github"}), " Source Code")
 						)
 					), 
 

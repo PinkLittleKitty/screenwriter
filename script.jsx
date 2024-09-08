@@ -218,19 +218,18 @@ var Script = React.createClass({
 					}).bind(this));
 				}
 		}
-	},
-	render: function() {
+	},	render: function() {
 		var indexes = {};
 		var lines = [];
 		var previous = null, prevPrevious = null;
 		var next = (function(line, index){
 			lines.push(
-				<Line line={line} key={index} index={index} ref={'line'+index}
-					previous={previous} prevPrevious={prevPrevious}
-					onFocus={this.editing.bind(this, index)}
-					getSuggestion={this.getSuggestion}
-					readonly={this.state.action == 'view'}
-					onKeyDown={this.handleKey} />
+				React.createElement(Line, {line: line, key: index, index: index, ref: 'line'+index, 
+					previous: previous, prevPrevious: prevPrevious, 
+					onFocus: this.editing.bind(this, index), 
+					getSuggestion: this.getSuggestion, 
+					readonly: this.state.action == 'view', 
+					onKeyDown: this.handleKey})
 			);
 			prevPrevious = previous;
 			previous = index;
@@ -268,8 +267,7 @@ var Line = React.createClass({
 	},
 	handleChange: function(event) {
 		this.firebaseRefs.line.update({'text':event.target.value});
-	},
-	handleComment: function(event) {
+	},	handleComment: function(event) {
 		this.firebaseRefs.line.update({'comment':event.target.value});
 	},
 	nextType: function(){
@@ -356,15 +354,16 @@ var Line = React.createClass({
 				suggest = this.props.getSuggestion(this.props.index);
 			}
 
-			line = <ContentEditable
-					ref="text"
-					html={this.props.line.text}
-					onChange={this.handleChange}
-					onKeyDown={this.handleKey}
-					onFocus={this.onFocus}
-					onBlur={this.onBlur}
-					suggest={suggest}
-					className="line-text" />
+				line = React.createElement(ContentEditable, {
+					ref: "text", 
+					html: this.props.line.text, 
+					onChange: this.handleChange, 
+					onKeyDown: this.handleKey, 
+					onFocus: this.onFocus, 
+					onBlur: this.onBlur, 
+					suggest: suggest, 
+					className: "line-text"
+				})
 		}
 
 		return (
@@ -417,7 +416,6 @@ var ContentEditable = React.createClass({
 			onClick={this.props.onClick}
 			className={this.props.className}
 			onFocus={this.props.onFocus}
-			onBlur={this.props.onBlur}
 			onPaste={this.stripPaste}
 			data-suggest={this.props.suggest}
 			contentEditable

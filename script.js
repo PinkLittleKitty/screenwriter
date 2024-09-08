@@ -1,3 +1,13 @@
+function debounce(func, wait) {
+  var timeout;
+  return function() {
+	var context = this, args = arguments;
+	clearTimeout(timeout);
+	timeout = setTimeout(function() {
+	  func.apply(context, args);
+	}, wait);
+  };
+}
 var types = ['scene', 'action', 'character', 'dialogue', 'parenthetical', 'transition', 'shot', 'text'];
 var nextTypes = {
 	scene: 'action',
@@ -265,6 +275,7 @@ var Line = React.createClass({displayName: "Line",
 	},
 	componentWillMount: function() {
 		this.bindAsObject(new Firebase("https://screenwrite.firebaseio.com/"+this.state.scriptId+"/lines/" + this.props.index), "line");
+		this.debouncedHandleChange = debounce(this.handleChange, 300); // 300ms delay
 	},
 	handleChange: function(event) {
 		this.firebaseRefs.line.update({'text':event.target.value});
@@ -359,7 +370,7 @@ var Line = React.createClass({displayName: "Line",
 			line = React.createElement(ContentEditable, {
 					ref: "text", 
 					html: this.props.line.text, 
-					onChange: this.handleChange, 
+					onChange: this.debouncedHandleChange, 
 					onKeyDown: this.handleKey, 
 					onFocus: this.onFocus, 
 					onBlur: this.onBlur, 
@@ -411,6 +422,13 @@ var ContentEditable = React.createClass({displayName: "ContentEditable",
 			});
 
 			// Restore cursor position after the change
+			setTimeout(() => {
+				var newRange = document.createRange();
+				newRange.setStart(sel.anchorNode, offset);
+				newRange.setEnd(sel.anchorNode, offset);
+				sel.removeAllRanges();
+				sel.addRange(newRange);
+			}, 0);
 			setTimeout(() => {
 				var newRange = document.createRange();
 				newRange.setStart(sel.anchorNode, offset);
